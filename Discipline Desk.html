@@ -1,0 +1,1149 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Discipline Desk</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: one column journal. Bottom tab bar on phones, top tabs on desktop. Guided 8-step trade check is the centre of the app. */
+:root{
+  --bg:#F2F5F8; --surface:#FFFFFF; --surface2:#E9EEF3; --line:#D3DCE5;
+  --fg:#0F1B26; --muted:#52657A;
+  --accent:#0A7C74; --accent-fg:#FFFFFF; --accent-soft:#D5EFEC;
+  --win:#16864B; --win-soft:#DCF3E5; --loss:#C93B33; --loss-soft:#FBE2E0; --warn:#8F5C00; --warn-soft:#FAEBCB;
+  --f-display:'Space Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A1118; --surface:#111B25; --surface2:#182430; --line:#243342;
+    --fg:#E7EEF4; --muted:#93A5B7;
+    --accent:#43C6B5; --accent-fg:#06211E; --accent-soft:#12332F;
+    --win:#4BD28A; --win-soft:#12301F; --loss:#FF7168; --loss-soft:#3A1816; --warn:#F2B84B; --warn-soft:#38290C;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A1118; --surface:#111B25; --surface2:#182430; --line:#243342;
+  --fg:#E7EEF4; --muted:#93A5B7;
+  --accent:#43C6B5; --accent-fg:#06211E; --accent-soft:#12332F;
+  --win:#4BD28A; --win-soft:#12301F; --loss:#FF7168; --loss-soft:#3A1816; --warn:#F2B84B; --warn-soft:#38290C;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:920px;margin:0 auto;padding-block:14px 100px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);margin:0;line-height:1.2;text-wrap:balance}
+h2{font-size:22px;font-weight:600}
+h3{font-size:16px;font-weight:600}
+p{margin:0}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.01em}
+.brand span{color:var(--accent)}
+.status{font-size:12px;color:var(--muted);background:var(--surface2);padding:4px 10px;border-radius:99px}
+.status.bad{color:var(--warn);background:var(--warn-soft)}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;gap:2px;background:var(--surface);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+nav.tabs button{flex:1;min-width:0;min-height:44px;border:0;background:none;color:var(--muted);font:500 12px var(--f-body);border-radius:10px;cursor:pointer;padding:4px 2px}
+nav.tabs button.on{color:var(--accent);background:var(--accent-soft);font-weight:600}
+nav.tabs button.plus{color:var(--accent-fg);background:var(--accent);font-weight:600}
+@media(min-width:760px){
+  nav.tabs{position:static;border:0;background:none;padding:0;margin-block:12px 18px;gap:6px}
+  nav.tabs button{flex:none;font-size:14px;padding:8px 16px}
+  .wrap{padding-bottom:48px}
+}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row.between{justify-content:space-between}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:560px){.grid4{grid-template-columns:1fr 1fr}}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+.stat b{display:block;font-family:var(--f-mono);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted)}
+.win{color:var(--win)} .loss{color:var(--loss)} .warnc{color:var(--warn)}
+.quote{background:var(--accent);color:var(--accent-fg);border-radius:16px;padding:20px 20px 16px}
+.quote p{font-family:var(--f-display);font-size:21px;font-weight:600;line-height:1.3;text-wrap:balance}
+.quote small{display:block;margin-top:10px;opacity:.85;font-size:12px}
+.quote button{background:rgba(255,255,255,.2);color:inherit;border:0;border-radius:99px;padding:6px 12px;font:500 12px var(--f-body);cursor:pointer;min-height:32px}
+.btn{font:600 14px var(--f-body);min-height:44px;padding:0 18px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.danger{color:var(--loss);border-color:var(--loss)}
+.btn.sm{min-height:36px;padding:0 12px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:default}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{min-height:38px;padding:0 14px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:500 14px var(--f-body);cursor:pointer}
+.chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.chip.buy.on{background:var(--win-soft);border-color:var(--win);color:var(--win)}
+.chip.sell.on{background:var(--loss-soft);border-color:var(--loss);color:var(--loss)}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted);min-width:0}
+input[type=text],input[type=date],input[type=time],textarea,select{width:100%;min-height:44px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);font:400 15px var(--f-body)}
+textarea{min-height:96px;resize:vertical}
+input.num{font-family:var(--f-mono)}
+.steps{display:flex;gap:4px}
+.steps button{flex:1;height:8px;border:0;border-radius:4px;background:var(--surface2);cursor:pointer;padding:0}
+.steps button.done{background:var(--accent)}
+.steps button.cur{background:var(--accent);outline:2px solid var(--accent-soft);outline-offset:1px}
+.guide{font-size:14px;color:var(--muted)}
+ul.rules{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+label.rule{display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:var(--surface)}
+label.rule:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+label.rule input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--accent);flex:none}
+label.rule span{flex:1;min-width:0}
+em.req{font-style:normal;font-size:11px;font-weight:600;color:var(--warn);background:var(--warn-soft);padding:2px 8px;border-radius:99px;white-space:nowrap}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 10px;border-radius:99px;background:var(--surface2);color:var(--muted);white-space:nowrap}
+.pill.win{background:var(--win-soft);color:var(--win)}
+.pill.loss{background:var(--loss-soft);color:var(--loss)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.acc{background:var(--accent-soft);color:var(--accent)}
+.meter{height:10px;border-radius:6px;background:var(--surface2);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent)}
+.meter.bad i{background:var(--loss)}
+.alert{padding:12px 14px;border-radius:10px;font-size:14px}
+.alert.warn{background:var(--warn-soft);color:var(--warn)}
+.alert.bad{background:var(--loss-soft);color:var(--loss)}
+.alert.ok{background:var(--win-soft);color:var(--win)}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.thumbs figure{margin:0;position:relative;aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:var(--surface2);border:1px solid var(--line)}
+.thumbs img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in}
+.thumbs button.x{position:absolute;top:4px;right:4px;width:28px;height:28px;border-radius:99px;border:0;background:rgba(0,0,0,.65);color:#fff;cursor:pointer;font-size:16px;line-height:1}
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:92px;border:2px dashed var(--line);border-radius:12px;color:var(--muted);cursor:pointer;text-align:center;padding:12px}
+.drop input{display:none}
+.tcard{padding:0;overflow:hidden}
+.thead{display:flex;gap:12px;align-items:center;width:100%;padding:14px 16px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.thead .t{flex:1;min-width:0}
+.thead b{font-family:var(--f-mono);font-size:16px}
+.tbody{padding:0 16px 16px;display:flex;flex-direction:column;gap:14px;border-top:1px solid var(--line);padding-top:14px}
+.chk{display:flex;gap:8px;font-size:14px;padding:3px 0}
+.chk i{font-style:normal;width:18px;flex:none;font-weight:700}
+.chk.ok i{color:var(--win)} .chk.no i{color:var(--loss)}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal .dow{font-size:11px;color:var(--muted);text-align:center;padding:4px 0}
+.cal button.day{min-height:60px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:4px;font:inherit;cursor:pointer;text-align:left;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;min-width:0}
+.cal button.day.blank{visibility:hidden}
+.cal button.day b{font-size:12px;font-weight:600}
+.cal button.day span{font-family:var(--f-mono);font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal button.day.w{background:var(--win-soft);border-color:var(--win)}
+.cal button.day.l{background:var(--loss-soft);border-color:var(--loss)}
+.cal button.day.n{background:var(--surface2)}
+.cal button.day.today b{color:var(--accent);text-decoration:underline}
+.cal button.day.sel{outline:2px solid var(--accent);outline-offset:1px}
+.cal button.day u{display:block;height:4px;border-radius:2px;background:var(--win);text-decoration:none}
+.cal button.day u.bad{background:var(--loss)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+#lightbox{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:16px;cursor:zoom-out}
+#lightbox img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:60;max-width:min(92vw,440px);background:var(--fg);color:var(--bg);padding:12px 16px;border-radius:12px;font-size:14px;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+@media(min-width:760px){#toast{bottom:24px}}
+.empty{text-align:center;padding:28px 16px}
+.seq{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px;text-align:left}
+.seq div{background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:13px}
+.seq b{display:block;font-family:var(--f-mono);font-size:12px;color:var(--accent)}
+@media(max-width:420px){nav.tabs button{font-size:11px}}
+.svgchart{width:100%;height:auto;display:block}
+.svgchart .ax{stroke:var(--line);stroke-width:1}
+.svgchart .ln{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.svgchart .ar{fill:var(--accent-soft);opacity:.8;stroke:none}
+.svgchart .dot{fill:var(--accent)}
+.svgchart text{fill:var(--muted);font:11px var(--f-mono)}
+table.bd{width:100%;border-collapse:collapse;font-size:13px}
+table.bd th,table.bd td{text-align:right;padding:8px 6px;border-bottom:1px solid var(--line)}
+table.bd th:first-child,table.bd td:first-child{text-align:left}
+table.bd th{font-weight:600;color:var(--muted);font-size:12px}
+.tscroll{overflow-x:auto}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.badge{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface);min-width:0}
+.badge b{display:block;font-size:13px}
+.badge span{display:block;font-size:12px;color:var(--muted)}
+.badge.got{border-color:var(--accent);background:var(--accent-soft)}
+.badge.got b{color:var(--accent)}
+.badge .meter{height:6px;margin:6px 0 2px}
+.lock{text-align:center;border:2px solid var(--loss);align-items:stretch}
+.aiout{white-space:pre-wrap;background:var(--surface2);border-radius:10px;padding:12px;font-size:14px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Discipline<span> Desk</span></div>
+    <div class="status" id="status">Connecting…</div>
+  </div>
+  <nav class="tabs" id="nav" aria-label="Sections">
+    <button data-tab="today">Today</button>
+    <button data-tab="journal">Journal</button>
+    <button data-tab="new" class="plus">+ Trade</button>
+    <button data-tab="calendar">Calendar</button>
+    <button data-tab="stats">Stats</button>
+    <button data-tab="strategy">Rules</button>
+  </nav>
+  <main id="view" class="stack" style="margin-top:14px"></main>
+</div>
+<div id="lightbox" hidden></div>
+<div id="toast" hidden></div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- helpers ---------- */
+var $=function(s,r){return (r||document).querySelector(s)};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var pad=function(n){return String(n).padStart(2,'0')};
+var ymd=function(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+var todayStr=function(){return ymd(new Date())};
+var nowHM=function(){var d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())};
+var num=function(v){if(v===null||v===undefined||v==='')return null;var n=parseFloat(String(v).replace(',','.'));return isFinite(n)?n:null};
+var newId=function(){return 't'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)};
+var clone=function(o){return JSON.parse(JSON.stringify(o))};
+var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+/* ---------- content ---------- */
+var QUOTES=[
+ "Consistency is a position you hold every day, not a result you wait for.",
+ "A skipped bad trade is a profit you never see on the statement.",
+ "Your edge lives in the checklist. Follow it when it feels boring.",
+ "Protect the account first. Opportunities return, capital does not always.",
+ "Small, disciplined risks compound into a career.",
+ "You do not need every move. You need the next good setup.",
+ "Process over outcome: a well-executed loss still builds the habit.",
+ "Calm hands, clear levels, patient entries.",
+ "Every trade you log is a lesson you actually keep.",
+ "The market rewards patience more often than prediction.",
+ "Plan the trade, then trade the plan.",
+ "Discipline is choosing what you want most over what you want right now.",
+ "One good decision, repeated hundreds of times, is called an edge.",
+ "Losses are tuition. Review them and they pay you back.",
+ "Let price come to you. The best entries feel quiet.",
+ "Progress is measured in rules followed, not pips chased.",
+ "Today's job is simple: follow the plan and journal the truth.",
+ "Bad day? Log it, learn from it, close the charts, return fresh.",
+ "Confidence comes from preparation, not from the last winning trade.",
+ "Steady beats spectacular. Keep showing up."
+];
+var STEPS=[
+ {k:'setup',n:'Setup',q:'Before anything else: what are you trading, and are you fit to trade?'},
+ {k:'htf',n:'Higher timeframe',q:'Zoom out first. What is the bigger picture telling you?'},
+ {k:'structure',n:'Market structure',q:'Is price trending or ranging, and who is in control?'},
+ {k:'levels',n:'Key levels',q:'Where are the levels that matter? Trade from them, not between them.'},
+ {k:'trigger',n:'Entry trigger',q:'Drop to your entry timeframe. Did price give you the confirmation?'},
+ {k:'risk',n:'Risk plan',q:'Define the loss before you think about the win.'},
+ {k:'proof',n:'Chart and notes',q:'Upload your marked-up chart and write why this trade exists.'},
+ {k:'review',n:'Review',q:'Check the whole plan, then decide: take it or skip it.'}
+];
+var DEFAULT_CFG={currency:'$',maxRisk:1,minRR:2,maxTrades:2,account:10000,maxLosses:2,maxDayLossR:3,routine:"Checked the economic calendar for today\nMarked weekly and daily levels on my charts\nDecided my max trades and risk for today\nI am calm, rested and ready to follow my plan",rules:{
+ setup:"!I am calm and rested, not trying to win back a loss\n!High-impact news in the next 60 minutes is checked\nI am inside today's trade limit and loss limit",
+ htf:"!Higher-timeframe bias is identified (Weekly, Daily, 4H)\n!This trade goes with the higher-timeframe bias\nA higher-timeframe liquidity pool or target is marked",
+ structure:"!Swing highs and lows are marked on my trading timeframe\nThe last break of structure or change of character is identified\n!Trade direction agrees with current market structure",
+ levels:"!A key support/resistance or supply/demand zone is marked\n!Entry is at the level, not in the middle of a range\nThe next opposing level leaves room for my target",
+ trigger:"!I waited for confirmation on my entry timeframe\nPrice came to my zone and I did not chase\nThe entry pattern matches my strategy",
+ risk:"!Stop-loss sits beyond the structure that invalidates the idea\n!Risk per trade is inside my limit\n!Reward-to-risk meets my minimum"
+}};
+var PAIRS=['EUR/USD','GBP/USD','USD/JPY','USD/CHF','AUD/USD','NZD/USD','USD/CAD','EUR/GBP','EUR/JPY','GBP/JPY','XAU/USD'];
+
+function parseRules(text){
+  return String(text||'').split('\n').map(function(l){return l.trim()}).filter(Boolean).map(function(l){
+    var r=l.charAt(0)==='!'; return {t:r?l.slice(1).trim():l,r:r};
+  }).filter(function(x){return x.t});
+}
+
+/* ---------- state ---------- */
+var S={tab:'today',days:{},aiOk:false,aiText:{},aiBusy:false,override:null,lockConfirm:false,draftAi:'',rv:null,trades:[],cfg:clone(DEFAULT_CFG),mode:'boot',loaded:false,month:new Date(),selDay:todayStr(),filter:'all',open:null,confirm:null,draft:null,step:0,saving:false,qoff:0,stratConfirm:false};
+var TABS=['today','journal','new','calendar','stats','strategy'];
+
+/* ---------- storage ---------- */
+var store={
+  db:null,assets:null,dl:null,sample:null,mode:'local',
+  init:function(){
+    var self=this;
+    var u=function(n){return window.claude.use(n).catch(function(){return null})};
+    var p=(window.claude&&window.claude.use)?Promise.all([u('db'),u('assets'),u('downloads'),u('sample')]):Promise.resolve([null,null,null,null]);
+    return p.then(function(r){self.db=r[0];self.assets=r[1];self.dl=r[2];self.sample=r[3];self.mode=self.db?'cloud':'local';if(self.sample&&self.sample.limits){return self.sample.limits().then(function(l){S.aiOk=!!(l&&l.images)}).catch(function(){})}});
+  },
+  subscribe:function(onTrades,onCfg,onErr,onDays){
+    if(this.mode==='cloud'){
+      this.db.collection('trades').onSnapshot(function(s){onTrades(s.docs.map(function(d){var o=d.data()||{};o.id=d.id;return o}))},onErr);
+      this.db.doc('config/app').onSnapshot(function(s){onCfg(s.exists?s.data():null)},onErr);
+      this.db.collection('days').onSnapshot(function(s){var m={};s.docs.forEach(function(d){m[d.id]=d.data()||{}});onDays(m)},onErr);
+    }else{
+      onTrades(this._lt());onCfg(this._lc());onDays(this._ld());
+    }
+  },
+  _lt:function(){try{return JSON.parse(localStorage.getItem('dd_trades')||'[]')}catch(e){return []}},
+  _lc:function(){try{return JSON.parse(localStorage.getItem('dd_cfg')||'null')}catch(e){return null}},
+  _st:function(a){localStorage.setItem('dd_trades',JSON.stringify(a))},
+  _ld:function(){try{return JSON.parse(localStorage.getItem('dd_days')||'{}')}catch(e){return {}}},
+  saveDay:function(date,obj){
+    if(this.mode==='cloud')return this.db.doc('days/'+date).set(obj);
+    var m=this._ld();m[date]=obj;localStorage.setItem('dd_days',JSON.stringify(m));return Promise.resolve();
+  },
+  saveTrade:function(t){
+    if(this.mode==='cloud')return this.db.doc('trades/'+t.id).set(t);
+    var a=this._lt().filter(function(x){return x.id!==t.id});a.push(t);this._st(a);S.trades=a;return Promise.resolve();
+  },
+  updateTrade:function(id,patch){
+    if(this.mode==='cloud')return this.db.doc('trades/'+id).update(patch);
+    var a=this._lt().map(function(x){return x.id===id?Object.assign(x,patch):x});this._st(a);S.trades=a;return Promise.resolve();
+  },
+  deleteTrade:function(t){
+    var self=this;
+    if(this.mode==='cloud'){
+      return this.db.doc('trades/'+t.id).delete().then(function(){
+        if(self.assets)(t.images||[]).forEach(function(r){if(r.indexOf('data:')!==0)self.assets.delete(r).catch(function(){})});
+      });
+    }
+    var a=this._lt().filter(function(x){return x.id!==t.id});this._st(a);S.trades=a;return Promise.resolve();
+  },
+  saveConfig:function(c){
+    if(this.mode==='cloud')return this.db.doc('config/app').set(c);
+    localStorage.setItem('dd_cfg',JSON.stringify(c));return Promise.resolve();
+  },
+  uploadImage:function(blob){
+    var self=this;
+    if(this.mode==='cloud'){
+      if(!this.assets)return Promise.reject(new Error('Only the owner or an editor can upload images here.'));
+      return shrink(blob,1600,0.85).then(function(b){return self.assets.upload(b,{type:'image/jpeg'})}).then(function(r){return r.id});
+    }
+    return shrink(blob,1000,0.7).then(toDataURL);
+  }
+};
+function shrink(blob,max,q){
+  return new Promise(function(res,rej){
+    var im=new Image(),u=URL.createObjectURL(blob);
+    im.onload=function(){
+      var w=im.naturalWidth,h=im.naturalHeight,sc=Math.min(1,max/Math.max(w,h));
+      var c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*sc));c.height=Math.max(1,Math.round(h*sc));
+      var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
+      URL.revokeObjectURL(u);
+      c.toBlob(function(b){b?res(b):rej(new Error('Could not read that image.'))},'image/jpeg',q);
+    };
+    im.onerror=function(){URL.revokeObjectURL(u);rej(new Error('Could not read that image.'))};
+    im.src=u;
+  });
+}
+function toDataURL(b){return new Promise(function(res,rej){var f=new FileReader();f.onload=function(){res(f.result)};f.onerror=rej;f.readAsDataURL(b)})}
+function imgSrc(ref){return String(ref).indexOf('data:')===0?ref:'/_blob/'+ref}
+
+/* ---------- scoring ---------- */
+function buildChecks(d){
+  var out=[];
+  STEPS.forEach(function(st){
+    if(st.k==='proof'||st.k==='review')return;
+    parseRules(S.cfg.rules[st.k]).forEach(function(it,i){out.push({s:st.k,t:it.t,r:it.r?1:0,ok:d.checks[st.k+'-'+i]?1:0})});
+  });
+  return out;
+}
+function scoreOf(checks){
+  var tot=checks.length,ok=checks.filter(function(c){return c.ok}).length;
+  var miss=checks.filter(function(c){return c.r&&!c.ok});
+  return {total:tot,ok:ok,score:tot?Math.round(ok/tot*100):0,missing:miss};
+}
+function verdictOf(score,missing){
+  if(missing>0)return {k:'break',label:'Rule break',cls:'loss'};
+  if(score>=85)return {k:'a',label:'A-setup',cls:'win'};
+  if(score>=65)return {k:'ok',label:'Acceptable',cls:'warn'};
+  return {k:'weak',label:'Weak setup',cls:'warn'};
+}
+function pipSize(pair){
+  var p=String(pair||'').toUpperCase().replace(/\s/g,'');
+  if(/^(XAU|GOLD)/.test(p))return 0.1;
+  if(/JPY/.test(p))return 0.01;
+  if(/^[A-Z]{3}\/?[A-Z]{3}$/.test(p))return 0.0001;
+  return null;
+}
+function calcRisk(d){
+  var e=num(d.entry),s=num(d.sl),t=num(d.tp),o={};
+  if(e!==null&&s!==null&&e!==s){
+    var risk=Math.abs(e-s);o.risk=risk;
+    if(t!==null)o.rr=Math.abs(t-e)/risk;
+    o.sideOk=d.dir==='long'?(s<e&&(t===null||t>e)):(s>e&&(t===null||t<e));
+    var ps=pipSize(d.pair);if(ps)o.pips=risk/ps;
+  }
+  return o;
+}
+function warnings(d){
+  var w=[],r=calcRisk(d),rk=num(d.risk);
+  if(r.risk&&r.sideOk===false)w.push('Stop-loss and target are on the wrong side for a '+(d.dir==='long'?'buy':'sell')+'.');
+  if(r.rr!==undefined&&r.rr<S.cfg.minRR)w.push('Reward-to-risk is 1:'+r.rr.toFixed(1)+', below your minimum of 1:'+S.cfg.minRR+'.');
+  if(rk!==null&&rk>S.cfg.maxRisk)w.push('Risk is '+rk+'%, above your limit of '+S.cfg.maxRisk+'%.');
+  if(!r.risk)w.push('Entry and stop-loss are not filled in yet.');
+  var n=S.trades.filter(function(t){return t.date===todayStr()&&t.status!=='skipped'}).length;
+  if(d.date===todayStr()&&n>=S.cfg.maxTrades)w.push('You already took '+n+' trade'+(n===1?'':'s')+' today. Your limit is '+S.cfg.maxTrades+'.');
+  return w;
+}
+
+/* ---------- extra logic: sizing, lock, streaks, badges, export, AI, stats ---------- */
+function pipValueFor(d){
+  var p=String(d.pair||'').toUpperCase().replace(/[\s\/]/g,''),e=num(d.entry);
+  if(/^XAU/.test(p))return 10;
+  if(p.indexOf('USD')===0&&/JPY$/.test(p))return e?1000/e:null;
+  if(/^USD(CHF|CAD)$/.test(p))return e?10/e:null;
+  if(/USD$/.test(p))return 10;
+  return null;
+}
+function lotCalc(d){
+  var r=calcRisk(d),rk=num(d.risk),acct=num(d.acct);
+  if(acct===null)acct=num(S.cfg.account);
+  if(!r.pips||rk===null||acct===null)return null;
+  var amt=acct*rk/100,pv=num(d.pipVal),auto=false;
+  if(pv===null){pv=pipValueFor(d);auto=true}
+  if(!pv)return {need:true,pips:r.pips,amt:amt};
+  return {lots:amt/(r.pips*pv),amt:amt,pv:pv,auto:auto,pips:r.pips};
+}
+function lockState(){
+  var ts=S.trades.filter(function(t){return t.date===todayStr()&&(t.status==='win'||t.status==='loss'||t.status==='be')});
+  var losses=ts.filter(function(t){return t.status==='loss'}).length;
+  var net=ts.reduce(function(a,t){return a+(t.rMult||0)},0);
+  var reasons=[];
+  if(losses>=S.cfg.maxLosses)reasons.push(losses+' losing trade'+(losses===1?'':'s')+' today (limit '+S.cfg.maxLosses+')');
+  if(net<=-S.cfg.maxDayLossR)reasons.push('Down '+Math.abs(net).toFixed(1)+'R today (limit '+S.cfg.maxDayLossR+'R)');
+  return {locked:reasons.length>0&&S.override!==todayStr(),reasons:reasons,raw:reasons.length>0};
+}
+function lockView(l){
+  return '<div class="card lock stack"><h2>Stop trading for today</h2><p>'+l.reasons.map(esc).join('<br>')+'</p>'+
+   '<p class="muted">You set this limit on a calm day for a day exactly like this one. Close the charts, write your end-of-day review and reset for tomorrow.</p>'+
+   '<div class="quote" style="text-align:left"><p>“'+esc(QUOTES[(quoteIdx()+7)%QUOTES.length])+'”</p></div>'+
+   '<div class="row" style="justify-content:center"><button class="btn primary" data-act="go" data-v="today">Go to my review</button></div>'+
+   (S.lockConfirm?'<div class="alert bad">Overriding is logged on the trade as a rule break. Are you sure?<div class="row" style="justify-content:center;margin-top:8px"><button class="btn sm danger" data-act="lockyes">Override and continue</button><button class="btn sm" data-act="lockno">Stay locked</button></div></div>':'<button class="btn sm" style="align-self:center" data-act="lockask">Override this lock</button>')+'</div>';
+}
+function lockBanner(){
+  var l=lockState();if(!l.raw)return '';
+  var ov=S.override===todayStr();
+  return '<div class="alert '+(ov?'warn':'bad')+'"><b>'+(ov?'Daily limit overridden':'Daily loss limit reached')+'</b><br>'+l.reasons.map(esc).join('<br>')+(ov?'':'<br>New trades are locked for today. Write your review and come back tomorrow.')+'</div>';
+}
+
+/* days: routine and review */
+var dayChain=Promise.resolve();
+function saveDay(date,fn){
+  var cur=clone(S.days[date]||{});fn(cur);cur.date=date;S.days[date]=cur;
+  dayChain=dayChain.then(function(){return store.saveDay(date,cur)}).catch(function(){toast('Could not save. Check your connection.')});
+  return dayChain;
+}
+function routineCard(){
+  var items=parseRules(S.cfg.routine);
+  if(!items.length)return '';
+  var day=S.days[todayStr()]||{},pre=day.pre||{},done=0;
+  items.forEach(function(it,i){if(pre[i])done++});
+  return '<div class="card stack"><div class="row between"><h3>Pre-session routine</h3><span class="pill '+(done===items.length?'win':'')+'">'+done+' of '+items.length+(done===items.length?' ✓':'')+'</span></div><ul class="rules">'+
+   items.map(function(it,i){return '<li><label class="rule"><input type="checkbox" data-pre="'+i+'"'+(pre[i]?' checked':'')+'><span>'+esc(it.t)+'</span></label></li>'}).join('')+'</ul></div>';
+}
+function reviewCard(){
+  var day=S.days[todayStr()]||{},val=S.rv!==null?S.rv:(day.review||'');
+  return '<div class="card stack"><h3>End-of-day review</h3><p class="muted" style="font-size:13px">What went well? Where did you drift from the plan? What is the one thing to fix tomorrow?</p><textarea id="dayReview" aria-label="End-of-day review">'+esc(val)+'</textarea><button class="btn sm primary" style="align-self:flex-start" data-act="savereview">Save review</button></div>';
+}
+
+/* streaks and badges */
+function addDays(ds,n){var p=ds.split('-');return ymd(new Date(+p[0],+p[1]-1,+p[2]+n))}
+function weekKey(ds){var p=ds.split('-'),d=new Date(+p[0],+p[1]-1,+p[2]);d.setDate(d.getDate()-((d.getDay()+6)%7));return ymd(d)}
+function activeDates(){
+  var set={};
+  S.trades.forEach(function(t){set[t.date]=1});
+  Object.keys(S.days).forEach(function(k){
+    var d=S.days[k]||{},pre=d.pre||{};
+    if(Object.keys(pre).some(function(x){return pre[x]})||String(d.review||'').trim())set[k]=1;
+  });
+  return set;
+}
+function dayStreaks(){
+  var set=activeDates(),keys=Object.keys(set).sort(),best=0,run=0,prev=null;
+  keys.forEach(function(k){run=(prev&&addDays(prev,1)===k)?run+1:1;if(run>best)best=run;prev=k});
+  var cur=0,c=set[todayStr()]?todayStr():addDays(todayStr(),-1);
+  while(set[c]){cur++;c=addDays(c,-1)}
+  return {cur:cur,best:best};
+}
+function badgeList(){
+  var asc=S.trades.slice().sort(function(a,b){return (a.createdAt||0)-(b.createdAt||0)});
+  var best=0,run=0;
+  asc.forEach(function(t){if(t.missing>0)run=0;else{run++;if(run>best)best=run}});
+  var skipped=S.trades.filter(function(t){return t.status==='skipped'}).length;
+  var aN=S.trades.filter(function(t){return t.verdict==='a'&&t.status!=='skipped'}).length;
+  var wk={};
+  S.trades.forEach(function(t){var k=weekKey(t.date),w=wk[k]=wk[k]||{n:0,b:0};w.n++;if(t.missing>0)w.b++});
+  var clean=Object.keys(wk).filter(function(k){return wk[k].n>=3&&wk[k].b===0}).length;
+  var items=parseRules(S.cfg.routine).length,routine=0,review=0;
+  Object.keys(S.days).forEach(function(k){
+    var d=S.days[k]||{},pre=d.pre||{},done=0;
+    for(var i=0;i<items;i++)if(pre[i])done++;
+    if(items&&done===items)routine++;
+    if(String(d.review||'').trim())review++;
+  });
+  var ds=dayStreaks();
+  return [
+   {n:'First entry',d:'Log your first trade',v:S.trades.length,t:1},
+   {n:'Five by the book',d:'5 trades in a row with every required rule ticked',v:best,t:5},
+   {n:'Twenty by the book',d:'20 trades in a row by the rules',v:best,t:20},
+   {n:'Patient trader',d:'Skip 3 setups that failed your rules',v:skipped,t:3},
+   {n:'A-setup hunter',d:'Take 10 A-setups',v:aN,t:10},
+   {n:'Seven-day habit',d:'Journal 7 days in a row',v:ds.best,t:7},
+   {n:'Clean week',d:'A week of 3+ trades with no rule break',v:clean,t:1},
+   {n:'Prepared mind',d:'Finish the morning routine on 5 days',v:routine,t:5},
+   {n:'Honest reviewer',d:'Write 5 end-of-day reviews',v:review,t:5}
+  ];
+}
+function badgesCard(){
+  var list=badgeList(),got=list.filter(function(b){return b.v>=b.t}).length;
+  return '<div class="card stack"><div class="row between"><h3>Streaks and badges</h3><span class="pill acc">'+got+' of '+list.length+' earned</span></div><div class="badges">'+
+   list.map(function(b){
+     var ok=b.v>=b.t,p=Math.min(100,Math.round(b.v/b.t*100));
+     return '<div class="badge'+(ok?' got':'')+'"><b>'+(ok?'✓ ':'')+esc(b.n)+'</b><span>'+esc(b.d)+'</span>'+(ok?'':'<div class="meter"><i style="width:'+p+'%"></i></div><span>'+Math.min(b.v,b.t)+' / '+b.t+'</span>')+'</div>';
+   }).join('')+'</div></div>';
+}
+
+/* CSV export */
+function csvCell(v,text){
+  if(v===null||v===undefined)return '';
+  var s=String(v);
+  if(text&&/^[=+\-@\t\r]/.test(s))s="'"+s;
+  return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
+}
+function buildCsv(){
+  var head=['date','time','pair','direction','session','status','plan_score','verdict','required_rules_missed','higher_timeframes','structure','entry_timeframe','entry','stop_loss','take_profit','planned_rr','risk_pct','lots','r_multiple','pnl','mindset','followed_plan_after_entry','notes','lesson'];
+  var textCols=[2,3,4,5,7,9,10,11,20,22,23];
+  var rows=S.trades.slice().sort(function(a,b){return (a.date+(a.time||'')).localeCompare(b.date+(b.time||''))}).map(function(t){
+    return [t.date,t.time,t.pair,t.dir==='long'?'Buy':'Sell',t.session,t.status,t.score,t.verdict,t.missing,(t.htf||[]).join(' '),t.trend,t.ltf,t.entry,t.sl,t.tp,t.rr,t.riskPct,t.lots,t.rMult,t.pnl,t.emotion,t.followed==null?'':(t.followed?'yes':'no'),t.notes,t.lesson];
+  });
+  return '﻿'+[head].concat(rows).map(function(r){return r.map(function(v,i){return csvCell(v,textCols.indexOf(i)>=0)}).join(',')}).join('\r\n');
+}
+function doExport(){
+  if(!S.trades.length){toast('Nothing to export yet.');return}
+  if(!store.dl){toast('Export is not available in this view.');return}
+  store.dl.save({filename:'discipline-desk-journal-'+todayStr()+'.csv',data:buildCsv()}).then(function(){toast('Journal exported.')}).catch(function(e){if(!e||e.code!=='declined')toast('Could not export the journal.')});
+}
+
+/* AI chart review */
+function imgToBlob(src){
+  return new Promise(function(res,rej){
+    var im=new Image();
+    im.onload=function(){
+      var w=im.naturalWidth,h=im.naturalHeight,sc=Math.min(1,1600/Math.max(w,h));
+      var c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*sc));c.height=Math.max(1,Math.round(h*sc));
+      var x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
+      c.toBlob(function(b){b?res(b):rej(new Error('Could not read the chart image.'))},'image/jpeg',0.85);
+    };
+    im.onerror=function(){rej(new Error('Could not load the chart image.'))};
+    im.src=src;
+  });
+}
+function aiPrompt(t,checks){
+  var v=function(x){return x===null||x===undefined||x===''?'n/a':x};
+  var L=['You are a calm, honest trading coach. The attached image(s) are the trader\'s own marked-up forex chart(s) for ONE trade. Judge ONLY whether the trade follows the trader\'s written strategy rules below. Do not predict price and do not give financial advice.','','STRATEGY RULES (a leading ! means mandatory):'];
+  STEPS.forEach(function(st){var tx=S.cfg.rules[st.k];if(st.k!=='proof'&&st.k!=='review'&&tx&&tx.trim()){L.push('['+st.n+']');L.push(tx.trim())}});
+  L.push('','TRADE: '+v(t.pair)+' '+(t.dir==='long'?'BUY':'SELL')+', session '+v(t.session)+', higher timeframes checked: '+((t.htf||[]).join(', ')||'n/a')+', structure: '+v(t.trend)+', entry timeframe: '+v(t.ltf)+'.');
+  L.push('Entry '+v(t.entry)+', stop-loss '+v(t.sl)+', take-profit '+v(t.tp)+'.');
+  if(t.levels)L.push('Key levels the trader noted: '+t.levels);
+  if(t.notes)L.push('Trader\'s reasoning: '+t.notes);
+  if(checks&&checks.length){L.push('','TRADER\'S OWN CHECKLIST:');checks.forEach(function(c){L.push((c.ok?'[x] ':'[ ] ')+(c.r?'(mandatory) ':'')+c.t)})}
+  L.push('','Reply in plain text with no markdown symbols, using exactly these headings: VERDICT (VALID, PARTIAL or INVALID, plus one sentence), TIMEFRAMES AND STRUCTURE (what the chart shows versus the rules), KEY LEVELS (is the entry at a real level, is the stop sensible), MISSING OR BROKEN RULES, WHAT TO DO NEXT TIME. Maximum 250 words. If the chart is unclear or does not show something needed, say so instead of guessing.');
+  return L.join('\n');
+}
+function runAi(t,checks,srcs,outEl,onDone){
+  var sample=store.sample;
+  if(!sample){toast('AI review is not available in this view.');return}
+  if(!srcs.length){toast('Add a chart screenshot first.');return}
+  if(S.aiBusy)return;
+  S.aiBusy=true;outEl.textContent='Thinking…';
+  Promise.all(srcs.slice(0,4).map(imgToBlob)).then(function(blobs){
+    return sample(aiPrompt(t,checks),{images:blobs,onText:function(u){outEl.textContent=u.text}});
+  }).then(function(r){S.aiBusy=false;onDone(r.text)}).catch(function(e){
+    S.aiBusy=false;
+    var m={not_granted:'AI review was not allowed. You can allow it the next time it asks.',rate_limited:'Too many AI requests right now. Try again in a little while.',image_rejected:'One of the images could not be used. Try a smaller PNG or JPG.',images_unavailable:'AI image review is not available here.',sampling_disabled:'AI is not available for this account.'}[e&&e.code];
+    outEl.textContent=(e&&e.text)?e.text:'';
+    toast(m||((e&&e.message&&!e.code)?e.message:'AI review failed. Try again.'));
+  });
+}
+function aiBlock(t){
+  if(!S.aiOk)return '';
+  var txt=S.aiText[t.id]||t.aiReview||'',has=(t.images||[]).length>0;
+  return '<div class="stack" style="gap:8px"><h3>AI chart review</h3><p class="muted" style="font-size:13px">Claude checks your chart against your strategy rules. Feedback only, not financial advice.</p>'+
+   '<div class="row"><button class="btn sm primary" data-act="ai" data-id="'+esc(t.id)+'"'+(has?'':' disabled')+'>'+(txt?'Review again':'Review this chart')+'</button>'+
+   (S.aiText[t.id]&&S.aiText[t.id]!==t.aiReview?'<button class="btn sm" data-act="aisave" data-id="'+esc(t.id)+'">Save review to this trade</button>':'')+
+   (has?'':'<span class="muted" style="font-size:13px">Add a screenshot first.</span>')+'</div>'+
+   '<div class="aiout" id="aiout-'+esc(t.id)+'"'+(txt?'':' hidden')+'>'+esc(txt)+'</div></div>';
+}
+function aiDraftBlock(d){
+  if(!S.aiOk)return '';
+  var has=d.imgs.length>0;
+  return '<div class="card stack" style="gap:8px"><h3>AI chart check</h3><p class="muted" style="font-size:13px">Claude reads your chart against your strategy rules before you enter. Feedback only, not financial advice.</p>'+
+   '<div class="row"><button class="btn sm primary" data-act="aidraft"'+(has?'':' disabled')+'>'+(S.draftAi?'Check again':'Check my chart')+'</button>'+(has?'':'<span class="muted" style="font-size:13px">Add a chart in step 7 first.</span>')+'</div>'+
+   '<div class="aiout" id="aiout-draft"'+(S.draftAi?'':' hidden')+'>'+esc(S.draftAi)+'</div></div>';
+}
+function draftAsTrade(d){return {pair:d.pair,dir:d.dir,session:d.session,htf:d.htf,trend:d.trend,ltf:d.ltf,entry:d.entry,sl:d.sl,tp:d.tp,levels:d.levels,notes:d.notes}}
+
+/* stats */
+function pct(a,b){return b?Math.round(a/b*100):null}
+function closedTrades(){
+  return S.trades.filter(function(t){return t.status==='win'||t.status==='loss'||t.status==='be'}).sort(function(a,b){return (a.date+(a.time||'')).localeCompare(b.date+(b.time||''))||((a.createdAt||0)-(b.createdAt||0))});
+}
+function equitySvg(rs){
+  var W=600,H=220,pl=44,pr=14,pt=16,pb=26,cum=0,pts=[0];
+  rs.forEach(function(x){cum+=x.r;pts.push(cum)});
+  var min=Math.min.apply(null,pts),max=Math.max.apply(null,pts);
+  if(max===min){max+=1;min-=1}
+  var padv=(max-min)*0.08;max+=padv;min-=padv;
+  var X=function(i){return pl+(W-pl-pr)*(pts.length===1?0:i/(pts.length-1))};
+  var Y=function(v){return pt+(H-pt-pb)*(1-(v-min)/(max-min))};
+  var path='M'+pts.map(function(v,i){return X(i).toFixed(1)+' '+Y(v).toFixed(1)}).join(' L');
+  var base=Y(Math.max(min,Math.min(max,0))),last=pts.length-1;
+  var area=path+' L'+X(last).toFixed(1)+' '+base.toFixed(1)+' L'+X(0).toFixed(1)+' '+base.toFixed(1)+' Z';
+  var fmt=function(v){return (v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(1)+'R'};
+  var s='<svg class="svgchart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Equity curve in R, ending at '+fmt(cum)+'">';
+  s+='<line class="ax" x1="'+pl+'" x2="'+(W-pr)+'" y1="'+Y(0).toFixed(1)+'" y2="'+Y(0).toFixed(1)+'"/>';
+  s+='<path class="ar" d="'+area+'"/><path class="ln" d="'+path+'"/>';
+  s+='<circle class="dot" cx="'+X(last).toFixed(1)+'" cy="'+Y(cum).toFixed(1)+'" r="4"/>';
+  s+='<text x="'+(pl-6)+'" y="'+(Y(0)+4).toFixed(1)+'" text-anchor="end">0</text>';
+  s+='<text x="'+(pl-6)+'" y="'+(pt+8)+'" text-anchor="end">'+fmt(max-padv)+'</text>';
+  s+='<text x="'+(pl-6)+'" y="'+(H-pb)+'" text-anchor="end">'+fmt(min+padv)+'</text>';
+  s+='<text x="'+pl+'" y="'+(H-6)+'">'+esc(rs.length?dateLabel(rs[0].date):'')+'</text>';
+  s+='<text x="'+(W-pr)+'" y="'+(H-6)+'" text-anchor="end">'+esc(rs.length?dateLabel(rs[rs.length-1].date):'')+'</text></svg>';
+  return s;
+}
+function bdTable(title,keyFn,list){
+  var g={};
+  list.forEach(function(t){var k=keyFn(t);if(!k)return;var o=g[k]=g[k]||{n:0,w:0,r:0};o.n++;if(t.status==='win')o.w++;o.r+=(t.rMult||0)});
+  var keys=Object.keys(g).sort(function(a,b){return g[b].n-g[a].n});
+  if(!keys.length)return '';
+  return '<div class="card stack" style="gap:8px"><h3>'+esc(title)+'</h3><div class="tscroll"><table class="bd"><tr><th></th><th>Trades</th><th>Win %</th><th>Net R</th></tr>'+
+   keys.map(function(k){var o=g[k];return '<tr><td>'+esc(k)+'</td><td class="mono">'+o.n+'</td><td class="mono">'+pct(o.w,o.n)+'%</td><td class="mono '+(o.r>0?'win':o.r<0?'loss':'')+'">'+fmtR(o.r)+'</td></tr>'}).join('')+'</table></div></div>';
+}
+function cmpCard(cl){
+  var g1=cl.filter(function(t){return !(t.missing>0)}),g2=cl.filter(function(t){return t.missing>0});
+  var avg=function(l){var r=l.filter(function(t){return t.rMult!=null});return r.length?r.reduce(function(a,t){return a+t.rMult},0)/r.length:null};
+  var box=function(list,label,cls){
+    var a=avg(list),w=list.filter(function(t){return t.status==='win'}).length;
+    return '<div class="stat"><span>'+label+'</span><b class="'+cls+'">'+(a===null?'–':fmtR(a))+'</b><span>'+list.length+' trades'+(list.length?' · '+pct(w,list.length)+'% wins':'')+'</span></div>';
+  };
+  var a1=avg(g1),a2=avg(g2),note='';
+  if(a1!==null&&a2!==null)note='<p class="muted">Average result per trade: '+fmtR(a1)+' when you followed every required rule, '+fmtR(a2)+' when you broke one.</p>';
+  else if(!g2.length)note='<p class="muted">You have not broken a required rule on a closed trade yet. Keep it that way.</p>';
+  return '<div class="card stack"><h3>Do the rules pay off?</h3><div class="cmp">'+box(g1,'Followed all required rules','win')+box(g2,'Broke a required rule','loss')+'</div>'+note+'</div>';
+}
+function weeklyData(){
+  var end=todayStr(),start=addDays(end,-6);
+  var list=S.trades.filter(function(t){return t.date>=start&&t.date<=end});
+  var taken=list.filter(function(t){return t.status!=='skipped'});
+  var closed=taken.filter(function(t){return t.status==='win'||t.status==='loss'||t.status==='be'});
+  var net=closed.reduce(function(a,t){return a+(t.rMult||0)},0);
+  var miss={},hit={},seen={};
+  list.forEach(function(t){(t.checks||[]).forEach(function(c){seen[c.t]=(seen[c.t]||0)+1;if(c.ok)hit[c.t]=(hit[c.t]||0)+1;else miss[c.t]=(miss[c.t]||0)+1})});
+  var worst=null,wn=0;
+  Object.keys(miss).forEach(function(k){if(miss[k]>wn){wn=miss[k];worst=k}});
+  var good=null,gr=0;
+  Object.keys(seen).forEach(function(k){if(seen[k]>=2){var r=(hit[k]||0)/seen[k];if(r>gr||(r===gr&&good&&seen[k]>seen[good])){gr=r;good=k}}});
+  var emo={};
+  closed.forEach(function(t){if(t.status==='loss'&&t.emotion)emo[t.emotion]=(emo[t.emotion]||0)+1});
+  var we=null,en=0;
+  Object.keys(emo).forEach(function(k){if(emo[k]>en){en=emo[k];we=k}});
+  var act=activeDates(),days=0;
+  for(var i=0;i<7;i++)if(act[addDays(end,-i)])days++;
+  var scoreAvg=list.length?Math.round(list.reduce(function(a,t){return a+(t.score||0)},0)/list.length):null;
+  return {n:list.length,taken:taken.length,skipped:list.length-taken.length,net:net,hasR:closed.some(function(t){return t.rMult!=null}),worst:worst,wn:wn,good:good,gr:Math.round(gr*100),we:we,en:en,days:days,avg:scoreAvg,breaks:list.filter(function(t){return t.missing>0}).length,over:list.filter(function(t){return t.overrode}).length};
+}
+function weeklyCard(){
+  var w=weeklyData(),b=[];
+  if(!w.n)b.push('No trades logged in the last 7 days. Even a day of skipped setups counts when you log it.');
+  else{
+    if(w.worst)b.push('Most-missed rule: “'+esc(w.worst)+'”, missed '+w.wn+' time'+(w.wn===1?'':'s')+'.');
+    if(w.good&&w.gr>0)b.push('Strongest habit: “'+esc(w.good)+'”, ticked '+w.gr+'% of the time.');
+    if(w.we)b.push('Your losing trades this week mostly came while feeling '+esc(w.we.toLowerCase())+'.');
+    if(w.over)b.push('You overrode the daily loss lock '+w.over+' time'+(w.over===1?'':'s')+'.');
+  }
+  b.push('You journaled on '+w.days+' of the last 7 days.');
+  var focus=w.worst?'Focus for next week: do not enter until “'+esc(w.worst)+'” is ticked.':(w.n?'Focus for next week: keep doing exactly this.':'Focus for next week: log every setup you look at, taken or skipped.');
+  return '<div class="card stack"><div class="row between"><h3>Weekly review</h3><span class="muted" style="font-size:13px">Last 7 days</span></div>'+
+   '<div class="grid4"><div class="stat"><b>'+w.taken+'</b><span>Trades taken</span></div><div class="stat"><b>'+w.skipped+'</b><span>Setups skipped</span></div><div class="stat"><b class="'+(w.net>0?'win':w.net<0?'loss':'')+'">'+(w.hasR?fmtR(w.net):'–')+'</b><span>Net R</span></div><div class="stat"><b>'+(w.avg===null?'–':w.avg+'%')+'</b><span>Average plan score</span></div></div>'+
+   b.map(function(x){return '<p>'+x+'</p>'}).join('')+'<div class="alert ok"><b>'+focus+'</b></div></div>';
+}
+function vStats(){
+  var cl=closedTrades();
+  var rs=cl.filter(function(t){return t.rMult!=null}).map(function(t){return {r:t.rMult,date:t.date}});
+  var wins=cl.filter(function(t){return t.status==='win'}).length;
+  var net=rs.reduce(function(a,x){return a+x.r},0);
+  var gp=rs.filter(function(x){return x.r>0}).reduce(function(a,x){return a+x.r},0);
+  var gl=Math.abs(rs.filter(function(x){return x.r<0}).reduce(function(a,x){return a+x.r},0));
+  var pf=gl>0?(gp/gl).toFixed(2):(gp>0?'∞':'–');
+  var dd=0,peak=0,cum=0;
+  rs.forEach(function(x){cum+=x.r;if(cum>peak)peak=cum;if(peak-cum>dd)dd=peak-cum});
+  var avg=rs.length?net/rs.length:null;
+  var head='<div class="row between"><h2>Stats</h2><button class="btn sm" data-act="export">Export CSV</button></div>';
+  var body;
+  if(!cl.length){
+    body='<div class="card empty"><h3>Stats start after your first closed trade</h3><p class="muted" style="margin-top:6px">Save a result on a trade in the Journal and your equity curve, win rate and breakdowns appear here.</p></div>';
+  }else{
+    var sum='<div class="grid4"><div class="stat"><b>'+cl.length+'</b><span>Closed trades</span></div><div class="stat"><b>'+pct(wins,cl.length)+'%</b><span>Win rate</span></div>'+
+      '<div class="stat"><b class="'+(net>0?'win':net<0?'loss':'')+'">'+(rs.length?fmtR(net):'–')+'</b><span>Net R</span></div><div class="stat"><b>'+(avg===null?'–':fmtR(avg))+'</b><span>Average R per trade</span></div>'+
+      '<div class="stat"><b>'+pf+'</b><span>Profit factor</span></div><div class="stat"><b class="'+(dd>0?'loss':'')+'">'+(rs.length?'−'+dd.toFixed(1)+'R':'–')+'</b><span>Max drawdown</span></div>'+
+      '<div class="stat"><b>'+Math.round(cl.reduce(function(a,t){return a+(t.score||0)},0)/cl.length)+'%</b><span>Average plan score</span></div><div class="stat"><b>'+S.trades.filter(function(t){return t.status==='skipped'}).length+'</b><span>Setups skipped</span></div></div>';
+    var chart=rs.length?'<div class="card stack" style="gap:8px"><h3>Equity curve (R)</h3>'+equitySvg(rs)+'<p class="muted" style="font-size:12px">Cumulative R across closed trades that have an R multiple saved.</p></div>':'<div class="card muted">Add an R multiple to a closed trade to see your equity curve.</div>';
+    body=sum+chart+cmpCard(cl);
+  }
+  var tables=cl.length?
+    bdTable('By pair',function(t){return t.pair},cl)+
+    bdTable('By session',function(t){return t.session},cl)+
+    bdTable('By entry timeframe',function(t){return t.ltf},cl)+
+    bdTable('By direction',function(t){return t.dir==='long'?'Buy':'Sell'},cl)+
+    bdTable('By mindset',function(t){return t.emotion},cl):'';
+  return head+body+weeklyCard()+tables;
+}
+
+/* ---------- formatting ---------- */
+function fmtR(n){return (n>=0?'+':'−')+Math.abs(n).toFixed(1)+'R'}
+function fmtM(n){return (n>=0?'+':'−')+S.cfg.currency+Math.abs(n).toLocaleString(undefined,{maximumFractionDigits:2})}
+function dayValue(list){
+  var taken=list.filter(function(t){return t.status!=='skipped'&&t.status!=='open'});
+  if(!taken.length)return null;
+  var withM=taken.filter(function(t){return t.pnl!=null&&t.pnl!==''});
+  if(withM.length){var m=withM.reduce(function(a,t){return a+t.pnl},0);return {v:m,txt:fmtM(m)}}
+  var withR=taken.filter(function(t){return t.rMult!=null&&t.rMult!==''});
+  if(withR.length){var r=withR.reduce(function(a,t){return a+t.rMult},0);return {v:r,txt:fmtR(r)}}
+  return {v:0,txt:'0'};
+}
+function dateLabel(ds){var p=ds.split('-');return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})}
+function statusPill(t){
+  var m={open:['Open','acc'],win:['Win','win'],loss:['Loss','loss'],be:['Break-even',''],skipped:['Skipped','acc']}[t.status]||['Open','acc'];
+  return '<span class="pill '+m[1]+'">'+m[0]+'</span>';
+}
+function quoteIdx(){var d=new Date();var doy=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5);return (doy+S.qoff)%QUOTES.length}
+
+/* ---------- toast / status ---------- */
+var toastTimer=null;
+function toast(msg){var el=$('#toast');el.textContent=msg;el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.hidden=true},5000)}
+function setStatus(){
+  var el=$('#status');
+  var m={boot:['Connecting…',0],cloud:['Saved online',0],local:['Saved on this device only',1],err:['Cannot reach storage',1]}[S.mode]||['',0];
+  if(S.mode==='cloud'&&!S.loaded)m=['Loading…',0];
+  el.textContent=m[0];el.className='status'+(m[1]?' bad':'');
+}
+
+/* ---------- views ---------- */
+var view=$('#view');
+function monthStats(y,m){
+  var list=S.trades.filter(function(t){var p=t.date.split('-');return +p[0]===y&&+p[1]-1===m});
+  var taken=list.filter(function(t){return t.status!=='skipped'});
+  var closed=taken.filter(function(t){return t.status==='win'||t.status==='loss'||t.status==='be'});
+  var wins=closed.filter(function(t){return t.status==='win'}).length;
+  var sumR=closed.reduce(function(a,t){return a+(t.rMult||0)},0);
+  var avg=list.length?Math.round(list.reduce(function(a,t){return a+(t.score||0)},0)/list.length):null;
+  return {n:list.length,taken:taken.length,closed:closed.length,wins:wins,wr:closed.length?Math.round(wins/closed.length*100):null,sumR:sumR,hasR:closed.some(function(t){return t.rMult!=null}),avg:avg,breaks:list.filter(function(t){return t.missing>0}).length,skipped:list.length-taken.length};
+}
+function streak(){
+  var a=S.trades.slice().sort(function(x,y){return (y.createdAt||0)-(x.createdAt||0)});
+  var n=0;for(var i=0;i<a.length;i++){if(a[i].missing>0)break;n++}return n;
+}
+
+function vToday(){
+  var now=new Date(),h=now.getHours();
+  var greet=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  var st=monthStats(now.getFullYear(),now.getMonth());
+  var q=QUOTES[quoteIdx()];
+  var todayN=S.trades.filter(function(t){return t.date===todayStr()&&t.status!=='skipped'}).length;
+  var recent=S.trades.slice().sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0)}).slice(0,3);
+  var h2='<div><h2>'+greet+'.</h2><p class="muted">'+now.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'</p></div>';
+  var qb='<div class="quote"><p>“'+esc(q)+'”</p><small class="row between"><span>Today’s reminder</span><button data-act="quote">Another one</button></small></div>';
+  var stats='<div class="grid4">'+
+   '<div class="stat"><b>'+st.n+'</b><span>Trades logged this month</span></div>'+
+   '<div class="stat"><b>'+(st.wr===null?'–':st.wr+'%')+'</b><span>Win rate (closed)</span></div>'+
+   '<div class="stat"><b class="'+(st.sumR>0?'win':st.sumR<0?'loss':'')+'">'+(st.hasR?fmtR(st.sumR):'–')+'</b><span>Net R this month</span></div>'+
+   '<div class="stat"><b>'+(st.avg===null?'–':st.avg+'%')+'</b><span>Average plan score</span></div></div>';
+  var disc='<div class="card stack"><div class="row between"><h3>Discipline</h3><span class="pill '+(streak()>0?'win':'')+'">'+streak()+' in a row by the rules</span></div>'+
+   '<p class="muted">Your limits: risk up to <b class="mono">'+S.cfg.maxRisk+'%</b> per trade, reward-to-risk at least <b class="mono">1:'+S.cfg.minRR+'</b>, no more than <b class="mono">'+S.cfg.maxTrades+'</b> trades a day. Today: <b class="mono">'+todayN+'/'+S.cfg.maxTrades+'</b> taken.</p>'+
+   '<div class="row"><button class="btn primary" data-act="go" data-v="new">Plan a trade</button><span class="pill '+(dayStreaks().cur>0?'acc':'')+'">'+dayStreaks().cur+'-day journal streak</span>'+(st.breaks?'<span class="pill loss">'+st.breaks+' rule break'+(st.breaks===1?'':'s')+' this month</span>':'')+'</div></div>';
+  var body;
+  if(!S.trades.length){
+    body='<div class="card empty"><h3>Your journal is empty</h3><p class="muted" style="margin-top:6px">Every trade goes through the same eight checks before you enter. Start with your next setup.</p><div class="seq">'+
+      STEPS.map(function(s,i){return '<div><b>'+pad(i+1)+'</b>'+esc(s.n)+'</div>'}).join('')+'</div></div>';
+  }else{
+    body='<div class="stack"><h3>Recent trades</h3>'+recent.map(function(t){return tradeCard(t,false)}).join('')+'</div>';
+  }
+  return h2+lockBanner()+qb+routineCard()+stats+disc+badgesCard()+reviewCard()+body;
+}
+
+function tradeCard(t,withBody){
+  var v=verdictOf(t.score||0,t.missing||0);
+  var open=withBody&&S.open===t.id;
+  var res='';
+  if(t.status!=='skipped'&&t.status!=='open'){
+    var parts=[];if(t.rMult!=null)parts.push(fmtR(t.rMult));if(t.pnl!=null)parts.push(fmtM(t.pnl));
+    var cls=t.status==='win'?'win':t.status==='loss'?'loss':'';
+    if(parts.length)res='<b class="'+cls+'">'+parts.join(' · ')+'</b>';
+  }
+  var head='<button class="thead" data-act="'+(withBody?'open':'goj')+'" data-id="'+esc(t.id)+'" aria-expanded="'+(open?'true':'false')+'">'+
+    '<div class="t"><div class="row" style="gap:8px"><b>'+esc(t.pair)+'</b><span class="pill '+(t.dir==='long'?'win':'loss')+'">'+(t.dir==='long'?'Buy':'Sell')+'</span>'+statusPill(t)+'</div>'+
+    '<div class="muted" style="font-size:13px;margin-top:2px">'+esc(dateLabel(t.date))+' · '+esc(t.time||'')+' · '+esc(t.session||'')+'</div></div>'+
+    '<div style="text-align:right">'+(res?res+'<br>':'')+'<span class="pill '+v.cls+'">'+esc(v.label)+' · '+(t.score||0)+'%</span></div></button>';
+  return '<div class="card tcard">'+head+(open?tradeBody(t):'')+'</div>';
+}
+
+function tradeBody(t){
+  var groups={};(t.checks||[]).forEach(function(c){(groups[c.s]=groups[c.s]||[]).push(c)});
+  var chk=STEPS.filter(function(s){return groups[s.k]}).map(function(s){
+    return '<div><div class="muted" style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">'+esc(s.n)+'</div>'+
+    groups[s.k].map(function(c){return '<div class="chk '+(c.ok?'ok':'no')+'"><i>'+(c.ok?'✓':'✗')+'</i><span>'+esc(c.t)+(c.r&&!c.ok?' <em class="req">Required, missed</em>':'')+'</span></div>'}).join('')+'</div>';
+  }).join('');
+  var facts=[];
+  facts.push('HTF: '+esc((t.htf||[]).join(', ')||'–'));
+  facts.push('Structure: '+esc(t.trend||'–'));
+  facts.push('Entry TF: '+esc(t.ltf||'–'));
+  var px='';
+  if(t.entry!=null||t.sl!=null||t.tp!=null){
+    px='<div class="row mono" style="font-size:13px"><span>Entry '+(t.entry==null?'–':t.entry)+'</span><span>SL '+(t.sl==null?'–':t.sl)+'</span><span>TP '+(t.tp==null?'–':t.tp)+'</span>'+(t.rr?'<span>RR 1:'+t.rr.toFixed(1)+'</span>':'')+(t.riskPct!=null?'<span>Risk '+t.riskPct+'%</span>':'')+(t.lots?'<span>'+t.lots+' lots</span>':'')+'</div>';
+  }
+  var imgs=(t.images||[]).length?'<div class="thumbs">'+(t.images||[]).map(function(r){return '<figure><img src="'+esc(imgSrc(r))+'" alt="Trade chart" data-zoom="1" loading="lazy"></figure>'}).join('')+'</div>':'<p class="muted">No screenshots yet.</p>';
+  var shot='<label class="btn sm" style="display:inline-flex;align-items:center;cursor:pointer;align-self:flex-start">Add screenshot<input type="file" accept="image/*" multiple hidden data-shot="'+esc(t.id)+'"></label>';
+  var warn=(t.warn&&t.warn.length)?'<div class="alert warn">'+t.warn.map(esc).join('<br>')+'</div>':'';
+  var resForm='';
+  if(t.status!=='skipped'){
+    var sg=t.status==='loss'?-1:1;
+    resForm='<div class="stack" style="gap:10px"><h3>Result</h3><div class="grid2">'+
+     '<label class="f">Outcome<select id="rs-'+esc(t.id)+'"><option value="open"'+(t.status==='open'?' selected':'')+'>Still open</option><option value="win"'+(t.status==='win'?' selected':'')+'>Win</option><option value="loss"'+(t.status==='loss'?' selected':'')+'>Loss</option><option value="be"'+(t.status==='be'?' selected':'')+'>Break-even</option></select></label>'+
+     '<label class="f">R multiple (size only, e.g. 2)<input class="num" type="text" inputmode="decimal" id="rr-'+esc(t.id)+'" value="'+(t.rMult==null?'':Math.abs(t.rMult))+'"></label>'+
+     '<label class="f">P&amp;L amount ('+esc(S.cfg.currency)+')<input class="num" type="text" inputmode="decimal" id="rp-'+esc(t.id)+'" value="'+(t.pnl==null?'':Math.abs(t.pnl))+'"></label>'+
+     '<label class="f">Followed my plan after entry?<select id="rf-'+esc(t.id)+'"><option value=""'+(t.followed==null?' selected':'')+'>Not rated</option><option value="1"'+(t.followed===1?' selected':'')+'>Yes</option><option value="0"'+(t.followed===0?' selected':'')+'>No, I interfered</option></select></label></div>'+
+     '<label class="f">What did you learn?<textarea id="rn-'+esc(t.id)+'">'+esc(t.lesson||'')+'</textarea></label>'+
+     '<button class="btn primary" style="align-self:flex-start" data-act="saveres" data-id="'+esc(t.id)+'">Save result</button></div>';
+  }
+  var del=S.confirm===t.id?
+    '<div class="alert bad row between"><span>Delete this trade for good?</span><span class="row"><button class="btn sm danger" data-act="delyes" data-id="'+esc(t.id)+'">Delete</button><button class="btn sm" data-act="delno">Keep</button></span></div>':
+    '<button class="btn sm danger" style="align-self:flex-start" data-act="del" data-id="'+esc(t.id)+'">Delete trade</button>';
+  return '<div class="tbody">'+px+'<p class="muted" style="font-size:13px">'+facts.join(' · ')+'</p>'+
+    (t.levels?'<div><div class="muted" style="font-size:12px;font-weight:600">KEY LEVELS</div><p>'+esc(t.levels)+'</p></div>':'')+
+    (t.notes?'<div><div class="muted" style="font-size:12px;font-weight:600">WHY THIS TRADE</div><p>'+esc(t.notes)+'</p></div>':'')+
+    (t.emotion?'<p class="muted" style="font-size:13px">Mindset: '+esc(t.emotion)+'</p>':'')+
+    warn+imgs+shot+aiBlock(t)+'<div class="stack" style="gap:6px"><h3>Checklist at entry</h3>'+chk+'</div>'+resForm+del+'</div>';
+}
+
+function vJournal(){
+  var f=S.filter;
+  var list=S.trades.slice().sort(function(a,b){return (b.date+(b.time||'')).localeCompare(a.date+(a.time||''))||(b.createdAt-a.createdAt)});
+  var shown=list.filter(function(t){
+    if(f==='all')return true;if(f==='break')return t.missing>0;return t.status===f;
+  });
+  var fl=[['all','All'],['open','Open'],['win','Wins'],['loss','Losses'],['skipped','Skipped'],['break','Rule breaks']];
+  var chips='<div class="chips">'+fl.map(function(x){return '<button class="chip'+(f===x[0]?' on':'')+'" data-act="filter" data-v="'+x[0]+'">'+x[1]+'</button>'}).join('')+'</div>';
+  var body=shown.length?shown.map(function(t){return tradeCard(t,true)}).join(''):'<div class="card empty"><h3>'+(S.trades.length?'Nothing matches this filter':'No trades yet')+'</h3><p class="muted" style="margin:6px 0 14px">'+(S.trades.length?'Try another filter.':'Plan your first trade to start the journal.')+'</p>'+(S.trades.length?'':'<button class="btn primary" data-act="go" data-v="new">Plan a trade</button>')+'</div>';
+  return '<div class="row between"><h2>Journal</h2><button class="btn sm" data-act="export">Export CSV</button></div>'+chips+'<div class="stack">'+body+'</div>';
+}
+
+/* ----- calendar ----- */
+function vCalendar(){
+  var m=S.month,y=m.getFullYear(),mo=m.getMonth();
+  var first=new Date(y,mo,1),lead=(first.getDay()+6)%7,days=new Date(y,mo+1,0).getDate();
+  var st=monthStats(y,mo);
+  var byDay={};S.trades.forEach(function(t){(byDay[t.date]=byDay[t.date]||[]).push(t)});
+  var cells='';['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(function(d){cells+='<div class="dow">'+d+'</div>'});
+  for(var i=0;i<lead;i++)cells+='<button class="day blank" tabindex="-1" aria-hidden="true"></button>';
+  for(var d=1;d<=days;d++){
+    var ds=y+'-'+pad(mo+1)+'-'+pad(d),list=byDay[ds]||[],cls='day';
+    var dv=dayValue(list),val='',mark='<u style="visibility:hidden"></u>';
+    if(list.length){
+      if(dv){cls+=dv.v>0?' w':dv.v<0?' l':' n';val=dv.txt}
+      else{cls+=' n';val=list.length+(list.length===1?' trade':' trades')}
+      var bad=list.some(function(t){return t.missing>0});
+      mark='<u class="'+(bad?'bad':'')+'"></u>';
+    }
+    if(ds===todayStr())cls+=' today';
+    if(ds===S.selDay)cls+=' sel';
+    cells+='<button class="'+cls+'" data-act="day" data-v="'+ds+'" aria-label="'+esc(dateLabel(ds))+(list.length?', '+list.length+' trades':'')+'"><b>'+d+'</b><span>'+esc(val)+'</span>'+mark+'</button>';
+  }
+  var head='<div class="row between"><h2>'+MONTHS[mo]+' '+y+'</h2><div class="row" style="gap:6px"><button class="btn sm" data-act="mprev" aria-label="Previous month">‹</button><button class="btn sm" data-act="mnow">Today</button><button class="btn sm" data-act="mnext" aria-label="Next month">›</button></div></div>';
+  var summary='<div class="grid4">'+
+    '<div class="stat"><b>'+st.taken+'</b><span>Trades taken</span></div>'+
+    '<div class="stat"><b>'+(st.wr===null?'–':st.wr+'%')+'</b><span>Win rate</span></div>'+
+    '<div class="stat"><b class="'+(st.sumR>0?'win':st.sumR<0?'loss':'')+'">'+(st.hasR?fmtR(st.sumR):'–')+'</b><span>Net R</span></div>'+
+    '<div class="stat"><b>'+st.skipped+'</b><span>Bad setups skipped</span></div></div>';
+  var legend='<div class="legend"><span><i style="background:var(--win-soft);border:1px solid var(--win)"></i>Profit day</span><span><i style="background:var(--loss-soft);border:1px solid var(--loss)"></i>Loss day</span><span><i style="background:var(--win)"></i>Followed all required rules</span><span><i style="background:var(--loss)"></i>Broke a required rule</span></div>';
+  var sel=byDay[S.selDay]||[];
+  var detail='<div class="stack"><h3>'+esc(dateLabel(S.selDay))+'</h3>'+(sel.length?sel.map(function(t){return tradeCard(t,false)}).join(''):'<div class="card muted">No trades logged on this day.</div>')+
+    '<div><button class="btn sm" data-act="newday" data-v="'+S.selDay+'">Log a trade for this day</button></div></div>';
+  return head+summary+'<div class="card" style="padding:10px">'+'<div class="cal">'+cells+'</div></div>'+legend+detail;
+}
+
+/* ----- strategy ----- */
+function vStrategy(){
+  var c=S.cfg;
+  var blocks=STEPS.filter(function(s){return s.k!=='proof'&&s.k!=='review'}).map(function(s){
+    return '<label class="f"><b style="color:var(--fg);font-size:14px">'+esc(s.n)+'</b><textarea id="st-'+s.k+'" style="min-height:120px">'+esc(c.rules[s.k]||'')+'</textarea></label>';
+  }).join('');
+  var cur=['$','₹','€','£'];
+  return '<h2>Strategy rules</h2>'+
+   '<div class="card stack"><p class="muted">These are the checks every trade goes through. Write one rule per line. Start a line with <b class="mono">!</b> to make it required: miss one and the trade is flagged as a rule break. These are starter rules; replace them with your own strategy.</p></div>'+
+   '<div class="card stack"><h3>Your limits</h3><div class="grid2">'+
+   '<label class="f">Max risk per trade (%)<input class="num" type="text" inputmode="decimal" id="cf-risk" value="'+c.maxRisk+'"></label>'+
+   '<label class="f">Minimum reward-to-risk (1:x)<input class="num" type="text" inputmode="decimal" id="cf-rr" value="'+c.minRR+'"></label>'+
+   '<label class="f">Max trades per day<input class="num" type="text" inputmode="numeric" id="cf-n" value="'+c.maxTrades+'"></label>'+
+   '<label class="f">Account size ('+esc(c.currency)+')<input class="num" type="text" inputmode="decimal" id="cf-acct" value="'+c.account+'"></label>'+
+   '<label class="f">Lock after this many losses in a day<input class="num" type="text" inputmode="numeric" id="cf-ml" value="'+c.maxLosses+'"></label>'+
+   '<label class="f">Lock when down this many R in a day<input class="num" type="text" inputmode="decimal" id="cf-dl" value="'+c.maxDayLossR+'"></label>'+
+   '<div class="f">Currency<div class="chips">'+cur.map(function(x){return '<button class="chip'+(c.currency===x?' on':'')+'" data-act="cur" data-v="'+x+'">'+x+'</button>'}).join('')+'</div></div></div></div>'+
+   '<div class="stack">'+blocks+'<label class="f"><b style="color:var(--fg);font-size:14px">Pre-session routine (shown on Today)</b><textarea id="st-routine" style="min-height:120px">'+esc(c.routine||'')+'</textarea></label></div>'+
+   '<div class="row"><button class="btn primary" data-act="savecfg">Save strategy</button>'+(S.stratConfirm?'<button class="btn danger" data-act="resetyes">Yes, reset to starter rules</button><button class="btn" data-act="resetno">Cancel</button>':'<button class="btn" data-act="reset">Reset to starter rules</button>')+'</div>';
+}
+
+/* ----- new trade wizard ----- */
+function newDraft(date){return {id:null,date:date||todayStr(),time:nowHM(),pair:'EUR/USD',dir:'long',session:'London',htf:['D','H4'],trend:'',ltf:'M15',levels:'',checks:{},entry:'',sl:'',tp:'',risk:'',acct:String(S.cfg.account),pipVal:'',notes:'',emotion:'Calm',decision:'take',imgs:[]}}
+function chipsHtml(opts,sel,act,multi,cls){
+  return '<div class="chips">'+opts.map(function(o){var on=multi?sel.indexOf(o)>=0:sel===o;return '<button type="button" class="chip '+(cls||'')+(on?' on':'')+'" data-act="'+act+'" data-v="'+esc(o)+'" aria-pressed="'+on+'">'+esc(o)+'</button>'}).join('')+'</div>';
+}
+function rulesBlock(k){
+  var items=parseRules(S.cfg.rules[k]);
+  if(!items.length)return '<p class="muted">No rules for this step yet. Add some in the Strategy tab.</p>';
+  var done=items.filter(function(it,i){return S.draft.checks[k+'-'+i]}).length;
+  return '<div class="row between"><h3>Checklist</h3><span class="muted" id="stepCount" style="font-size:13px">'+done+' of '+items.length+' checked</span></div><ul class="rules">'+
+   items.map(function(it,i){var key=k+'-'+i;return '<li><label class="rule"><input type="checkbox" data-chk="'+key+'"'+(S.draft.checks[key]?' checked':'')+'><span>'+esc(it.t)+'</span>'+(it.r?'<em class="req">Required</em>':'')+'</label></li>'}).join('')+'</ul>';
+}
+function riskOut(d){
+  var r=calcRisk(d),h='';
+  if(r.risk){
+    h+='<div class="row mono" style="gap:16px">'+(r.rr!==undefined?'<span>RR <b>1:'+r.rr.toFixed(2)+'</b></span>':'<span class="muted">Add a target to see RR</span>')+(r.pips?'<span>SL <b>'+r.pips.toFixed(1)+'</b> pips</span>':'')+'</div>';
+  }else h='<span class="muted">Enter entry and stop-loss to see your risk-to-reward.</span>';
+  var lc=lotCalc(d);
+  if(lc&&lc.lots!==undefined)h+='<div class="row mono" style="gap:16px;margin-top:8px"><span>Risk <b>'+esc(S.cfg.currency)+lc.amt.toFixed(2)+'</b></span><span>Lot size <b>'+(Math.floor(lc.lots*100)/100).toFixed(2)+'</b></span></div><p class="muted" style="font-size:12px;margin-top:4px">Pip value used: '+lc.pv.toFixed(2)+' per lot'+(lc.auto?' (estimate, enter your broker\u2019s value for an exact size)':'')+'.</p>';
+  else if(lc&&lc.need)h+='<p class="muted" style="margin-top:8px;font-size:13px">Enter your broker\u2019s pip value per lot to get a lot size.</p>';
+  var w=warnings(d).filter(function(x){return x.indexOf('not filled')<0&&x.indexOf('already took')<0});
+  if(w.length)h+='<div class="alert warn" style="margin-top:8px">'+w.map(esc).join('<br>')+'</div>';
+  return h;
+}
+function stepBody(k){
+  var d=S.draft;
+  if(k==='setup'){
+    var n=S.trades.filter(function(t){return t.date===todayStr()&&t.status!=='skipped'}).length;
+    return '<div class="stack"><div class="grid2"><label class="f">Pair<input type="text" list="pairs" id="f-pair" data-f="pair" value="'+esc(d.pair)+'" autocapitalize="characters" autocomplete="off"></label><datalist id="pairs">'+PAIRS.map(function(p){return '<option value="'+p+'">'}).join('')+'</datalist>'+
+     '<div class="f">Direction<div class="chips"><button type="button" class="chip buy'+(d.dir==='long'?' on':'')+'" data-act="dir" data-v="long">Buy</button><button type="button" class="chip sell'+(d.dir==='short'?' on':'')+'" data-act="dir" data-v="short">Sell</button></div></div>'+
+     '<label class="f">Date<input type="date" id="f-date" data-f="date" value="'+esc(d.date)+'"></label><label class="f">Time<input type="time" id="f-time" data-f="time" value="'+esc(d.time)+'"></label></div>'+
+     '<div class="f">Session'+chipsHtml(['Asian','London','New York','Overlap'],d.session,'ses',false)+'</div>'+
+     (n>=S.cfg.maxTrades&&d.date===todayStr()?'<div class="alert warn">You have already taken '+n+' trade'+(n===1?'':'s')+' today. Your limit is '+S.cfg.maxTrades+'. Be honest about whether this one is worth breaking it.</div>':'')+
+     rulesBlock(k)+'</div>';
+  }
+  if(k==='htf')return '<div class="stack"><div class="f">Timeframes you checked'+chipsHtml(['W','D','H4','H1'],d.htf,'htf',true)+'</div>'+rulesBlock(k)+'</div>';
+  if(k==='structure')return '<div class="stack"><div class="f">Current structure'+chipsHtml(['Uptrend','Downtrend','Range'],d.trend,'trend',false)+'</div>'+rulesBlock(k)+'</div>';
+  if(k==='levels')return '<div class="stack"><label class="f">Key levels (prices or notes)<textarea id="f-levels" data-f="levels" placeholder="e.g. Daily supply 1.0850, 4H support 1.0720, round number 1.0800">'+esc(d.levels)+'</textarea></label>'+rulesBlock(k)+'</div>';
+  if(k==='trigger')return '<div class="stack"><div class="f">Entry timeframe'+chipsHtml(['H1','M30','M15','M5','M1'],d.ltf,'ltf',false)+'</div>'+rulesBlock(k)+'</div>';
+  if(k==='risk')return '<div class="stack"><div class="grid2"><label class="f">Entry<input class="num" type="text" inputmode="decimal" id="f-entry" data-f="entry" value="'+esc(d.entry)+'"></label><label class="f">Stop-loss<input class="num" type="text" inputmode="decimal" id="f-sl" data-f="sl" value="'+esc(d.sl)+'"></label><label class="f">Take-profit<input class="num" type="text" inputmode="decimal" id="f-tp" data-f="tp" value="'+esc(d.tp)+'"></label><label class="f">Risk (% of account)<input class="num" type="text" inputmode="decimal" id="f-risk" data-f="risk" value="'+esc(d.risk)+'"></label><label class="f">Account size ('+esc(S.cfg.currency)+')<input class="num" type="text" inputmode="decimal" id="f-acct" data-f="acct" value="'+esc(d.acct)+'"></label><label class="f">Pip value per lot (optional)<input class="num" type="text" inputmode="decimal" id="f-pipVal" data-f="pipVal" value="'+esc(d.pipVal)+'" placeholder="auto"></label></div><div class="card" id="riskOut" style="background:var(--surface2)">'+riskOut(d)+'</div>'+rulesBlock(k)+'</div>';
+  if(k==='proof'){
+    var th=d.imgs.length?'<div class="thumbs">'+d.imgs.map(function(im,i){return '<figure><img src="'+im.url+'" alt="Chart '+(i+1)+'" data-zoom="1"><button class="x" type="button" data-act="rmimg" data-v="'+i+'" aria-label="Remove image">×</button></figure>'}).join('')+'</div>':'';
+    return '<div class="stack"><div class="f">Chart screenshots'+th+'<label class="drop"><input type="file" id="imgInput" accept="image/*" multiple><b>Tap to add chart images</b><span style="font-size:13px">HTF, structure and entry charts. Up to 6.</span></label></div>'+
+     '<label class="f">Why this trade? What is the story on the chart?<textarea id="f-notes" data-f="notes">'+esc(d.notes)+'</textarea></label>'+
+     '<div class="f">How do you feel right now?'+chipsHtml(['Calm','Confident','Anxious','FOMO','Revenge','Bored'],d.emotion,'emo',false)+'</div></div>';
+  }
+  if(k==='review'){
+    var ch=buildChecks(d),sc=scoreOf(ch),v=verdictOf(sc.score,sc.missing.length),w=warnings(d);
+    var fails=ch.filter(function(c){return !c.ok&&!c.r});
+    var out='<div class="stack"><div class="card stack" style="background:var(--surface2)"><div class="row between"><h3>Plan score</h3><span class="pill '+v.cls+'">'+esc(v.label)+'</span></div>'+
+     '<div class="row" style="gap:12px;flex-wrap:nowrap"><b class="mono" style="font-size:28px">'+sc.score+'%</b><div style="flex:1"><div class="meter'+(sc.missing.length?' bad':'')+'"><i style="width:'+sc.score+'%"></i></div><p class="muted" style="font-size:13px;margin-top:4px">'+sc.ok+' of '+sc.total+' checks ticked</p></div></div></div>';
+    if(sc.missing.length)out+='<div class="alert bad"><b>Required rules missing</b><br>'+sc.missing.map(function(c){return '✗ '+esc(c.t)}).join('<br>')+'<br><br>Your own plan says this is not a valid trade. Skipping it is a win for your discipline.</div>';
+    else out+='<div class="alert ok">All required rules are ticked. This setup follows your plan.</div>';
+    if(fails.length)out+='<div class="alert warn"><b>Optional checks not ticked</b><br>'+fails.map(function(c){return esc(c.t)}).join('<br>')+'</div>';
+    if(w.length)out+='<div class="alert warn"><b>Risk flags</b><br>'+w.map(esc).join('<br>')+'</div>';
+    out+=aiDraftBlock(d);out+='<div class="f">Your decision<div class="chips"><button class="chip'+(d.decision==='take'?' on':'')+'" data-act="dec" data-v="take">Take the trade</button><button class="chip'+(d.decision==='skip'?' on':'')+'" data-act="dec" data-v="skip">Skip it (log as no-trade)</button></div></div></div>';
+    return out;
+  }
+  return '';
+}
+function vNew(){
+  var lk=lockState();if(lk.locked)return lockView(lk);
+  if(!S.draft){S.draft=newDraft();S.step=0}
+  var st=STEPS[S.step];
+  var bar='<div class="steps" role="tablist">'+STEPS.map(function(s,i){return '<button type="button" class="'+(i<S.step?'done':'')+(i===S.step?' cur':'')+'" data-act="goto" data-v="'+i+'" aria-label="Step '+(i+1)+': '+esc(s.n)+'"></button>'}).join('')+'</div>';
+  var head='<div class="stack" style="gap:6px"><span class="muted mono" style="font-size:12px">STEP '+(S.step+1)+' OF '+STEPS.length+'</span><h2>'+esc(st.n)+'</h2><p class="guide">'+esc(st.q)+'</p></div>';
+  var last=S.step===STEPS.length-1;
+  var nav='<div class="row between"><button class="btn" data-act="back"'+(S.step===0?' disabled':'')+'>Back</button>'+
+    (last?'<button class="btn primary" data-act="save"'+(S.saving?' disabled':'')+'>'+(S.saving?'Saving…':(S.draft.decision==='skip'?'Save no-trade':'Save to journal'))+'</button>':'<button class="btn primary" data-act="next">Next</button>')+'</div>';
+  return bar+'<div class="card stack">'+head+stepBody(st.k)+'</div>'+nav+'<div><button class="btn sm" data-act="discard">Discard this draft</button></div>';
+}
+
+/* ---------- render ---------- */
+function render(){
+  setStatus();
+  document.querySelectorAll('#nav button').forEach(function(b){
+    var on=b.dataset.tab===S.tab;
+    if(b.classList.contains('plus')){b.setAttribute('aria-current',on?'page':'false')}
+    else{b.classList.toggle('on',on);b.setAttribute('aria-current',on?'page':'false')}
+  });
+  var fn={today:vToday,journal:vJournal,calendar:vCalendar,stats:vStats,strategy:vStrategy,'new':vNew}[S.tab]||vToday;
+  view.innerHTML=fn();
+}
+function editing(){var a=document.activeElement;return a&&view.contains(a)&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT')}
+function refresh(){if(S.tab==='new'||editing())return;render()}
+function go(tab){
+  if(TABS.indexOf(tab)<0)tab='today';
+  S.tab=tab;S.confirm=null;
+  if(location.hash!=='#'+tab){try{location.hash=tab}catch(e){}}
+  render();window.scrollTo(0,0);
+}
+
+/* ---------- actions ---------- */
+function readCfgForm(){
+  var c=clone(S.cfg);
+  var r=num($('#cf-risk').value),m=num($('#cf-rr').value),n=num($('#cf-n').value);
+  if(r!==null&&r>0)c.maxRisk=r;if(m!==null&&m>0)c.minRR=m;if(n!==null&&n>=1)c.maxTrades=Math.round(n);
+  var ac=num($('#cf-acct').value),ml=num($('#cf-ml').value),dl=num($('#cf-dl').value);
+  if(ac!==null&&ac>0)c.account=ac;if(ml!==null&&ml>=1)c.maxLosses=Math.round(ml);if(dl!==null&&dl>0)c.maxDayLossR=dl;
+  var rt=$('#st-routine');if(rt)c.routine=rt.value;
+  STEPS.forEach(function(s){var el=$('#st-'+s.k);if(el)c.rules[s.k]=el.value});
+  return c;
+}
+function persistDraftImages(){
+  var refs=[],d=S.draft,chain=Promise.resolve();
+  d.imgs.forEach(function(im){chain=chain.then(function(){return store.uploadImage(im.blob)}).then(function(r){refs.push(r)})});
+  return chain.then(function(){return refs});
+}
+function saveDraft(){
+  var d=S.draft;
+  if(!String(d.pair).trim()){toast('Add the pair first.');S.step=0;render();return}
+  S.saving=true;render();
+  persistDraftImages().then(function(refs){
+    var ch=buildChecks(d),sc=scoreOf(ch),v=verdictOf(sc.score,sc.missing.length),r=calcRisk(d);
+    var skip=d.decision==='skip',lc=lotCalc(d),ov=(S.override===todayStr()&&d.date===todayStr()&&lockState().raw);
+    var t={id:newId(),createdAt:Date.now(),date:d.date||todayStr(),time:d.time||nowHM(),pair:String(d.pair).trim().toUpperCase(),dir:d.dir,session:d.session,htf:d.htf,trend:d.trend,ltf:d.ltf,levels:d.levels.trim(),
+      checks:ch,score:sc.score,missing:sc.missing.length,verdict:v.k,entry:num(d.entry),sl:num(d.sl),tp:num(d.tp),rr:r.rr!==undefined?Math.round(r.rr*100)/100:null,riskPct:num(d.risk),
+      notes:d.notes.trim(),emotion:d.emotion,warn:warnings(d).concat(ov?['Taken after the daily loss lock was reached.']:[]),status:skip?'skipped':'open',rMult:null,pnl:null,followed:null,lesson:'',images:refs,lots:(lc&&lc.lots!==undefined)?Math.floor(lc.lots*100)/100:null,aiReview:S.draftAi||'',overrode:ov?1:0};
+    return store.saveTrade(t).then(function(){return t});
+  }).then(function(t){
+    d.imgs.forEach(function(im){URL.revokeObjectURL(im.url)});
+    S.draft=null;S.step=0;S.saving=false;S.open=t.id;S.filter='all';S.draftAi='';
+    toast(t.status==='skipped'?'No-trade logged. Skipping a bad setup is real progress.':'Trade saved. '+QUOTES[(quoteIdx()+3)%QUOTES.length]);
+    if(store.mode==='local')render();
+    go('journal');
+  }).catch(function(e){
+    S.saving=false;render();toast((e&&e.message)?('Could not save: '+e.message):'Could not save. Try again.');
+  });
+}
+function saveResult(id){
+  var st=$('#rs-'+id).value,r=num($('#rr-'+id).value),p=num($('#rp-'+id).value),f=$('#rf-'+id).value,ln=$('#rn-'+id).value;
+  var sg=st==='loss'?-1:st==='win'?1:0;
+  var patch={status:st,rMult:st==='open'?null:(r===null?null:(st==='be'?0:sg*Math.abs(r))),pnl:st==='open'?null:(p===null?null:(st==='be'?0:sg*Math.abs(p))),followed:f===''?null:+f,lesson:ln.trim()};
+  store.updateTrade(id,patch).then(function(){
+    var t=S.trades.filter(function(x){return x.id===id})[0];if(t)Object.assign(t,patch);
+    toast(st==='open'?'Saved.':'Result saved. '+QUOTES[(quoteIdx()+5)%QUOTES.length]);
+    if(store.mode==='local')render();
+  }).catch(function(e){toast('Could not save the result.')});
+}
+function addShots(id,files){
+  var t=S.trades.filter(function(x){return x.id===id})[0];if(!t)return;
+  var imgs=(t.images||[]).slice(),list=Array.prototype.slice.call(files).filter(function(f){return /^image\//.test(f.type)});
+  if(!list.length)return;
+  toast('Uploading…');
+  var chain=Promise.resolve();
+  list.forEach(function(f){chain=chain.then(function(){return store.uploadImage(f)}).then(function(r){imgs.push(r)})});
+  chain.then(function(){return store.updateTrade(id,{images:imgs})}).then(function(){t.images=imgs;toast('Screenshot added.');if(store.mode==='local')render()}).catch(function(e){toast((e&&e.message)||'Upload failed.')});
+}
+
+view.addEventListener('click',function(e){
+  var z=e.target.closest('[data-zoom]');
+  if(z){var lb=$('#lightbox');lb.innerHTML='<img src="'+esc(z.getAttribute('src'))+'" alt="Chart enlarged">';lb.hidden=false;return}
+  var el=e.target.closest('[data-act]');if(!el)return;
+  var a=el.dataset.act,v=el.dataset.v,id=el.dataset.id,d=S.draft;
+  switch(a){
+    case 'go':go(v);break;
+    case 'goj':S.open=id;go('journal');break;
+    case 'quote':S.qoff++;render();break;
+    case 'filter':S.filter=v;render();break;
+    case 'open':S.open=S.open===id?null:id;S.confirm=null;render();break;
+    case 'del':S.confirm=id;render();break;
+    case 'delno':S.confirm=null;render();break;
+    case 'delyes':
+      var t=S.trades.filter(function(x){return x.id===id})[0];
+      if(t)store.deleteTrade(t).then(function(){S.confirm=null;S.open=null;toast('Trade deleted.');if(store.mode==='local')render()}).catch(function(){toast('Could not delete.')});
+      break;
+    case 'saveres':saveResult(id);break;
+    case 'export':doExport();break;
+    case 'ai':
+      var tt=S.trades.filter(function(x){return x.id===id})[0];
+      if(tt){var oe=$('#aiout-'+id);oe.hidden=false;runAi(tt,tt.checks||[],(tt.images||[]).map(imgSrc),oe,function(text){S.aiText[id]=text;render()})}
+      break;
+    case 'aisave':
+      var t2=S.trades.filter(function(x){return x.id===id})[0],txt2=S.aiText[id];
+      store.updateTrade(id,{aiReview:txt2}).then(function(){if(t2)t2.aiReview=txt2;toast('Review saved to this trade.');render()}).catch(function(){toast('Could not save the review.')});
+      break;
+    case 'aidraft':
+      var oe2=$('#aiout-draft');oe2.hidden=false;
+      runAi(draftAsTrade(d),buildChecks(d),d.imgs.map(function(im){return im.url}),oe2,function(text){S.draftAi=text;render()});
+      break;
+    case 'savereview':
+      saveDay(todayStr(),function(c0){c0.review=String(($('#dayReview')||{}).value||'').trim()}).then(function(){S.rv=null;toast('Review saved. '+QUOTES[(quoteIdx()+9)%QUOTES.length]);render()});
+      break;
+    case 'lockask':S.lockConfirm=true;render();break;
+    case 'lockyes':S.override=todayStr();S.lockConfirm=false;render();break;
+    case 'lockno':S.lockConfirm=false;render();break;
+    case 'day':S.selDay=v;render();break;
+    case 'mprev':S.month=new Date(S.month.getFullYear(),S.month.getMonth()-1,1);render();break;
+    case 'mnext':S.month=new Date(S.month.getFullYear(),S.month.getMonth()+1,1);render();break;
+    case 'mnow':S.month=new Date();S.selDay=todayStr();render();break;
+    case 'newday':S.draft=newDraft(v);S.step=0;go('new');break;
+    case 'cur':S.cfg.currency=v;S.cfg=readCfgForm();S.cfg.currency=v;render();break;
+    case 'savecfg':
+      var c=readCfgForm();S.cfg=c;
+      store.saveConfig(c).then(function(){toast('Strategy saved.');render()}).catch(function(){toast('Could not save the strategy.')});break;
+    case 'reset':S.stratConfirm=true;render();break;
+    case 'resetno':S.stratConfirm=false;render();break;
+    case 'resetyes':
+      var cc=clone(S.cfg);cc.rules=clone(DEFAULT_CFG.rules);S.cfg=cc;S.stratConfirm=false;
+      store.saveConfig(cc).then(function(){toast('Starter rules restored.');render()});break;
+    case 'dir':d.dir=v;render();break;
+    case 'ses':d.session=v;render();break;
+    case 'htf':var i=d.htf.indexOf(v);if(i>=0)d.htf.splice(i,1);else d.htf.push(v);render();break;
+    case 'trend':d.trend=v;render();break;
+    case 'ltf':d.ltf=v;render();break;
+    case 'emo':d.emotion=v;render();break;
+    case 'dec':d.decision=v;render();break;
+    case 'rmimg':URL.revokeObjectURL(d.imgs[+v].url);d.imgs.splice(+v,1);render();break;
+    case 'next':if(S.step<STEPS.length-1){S.step++;render();window.scrollTo(0,0)}break;
+    case 'back':if(S.step>0){S.step--;render();window.scrollTo(0,0)}break;
+    case 'goto':S.step=+v;render();window.scrollTo(0,0);break;
+    case 'save':saveDraft();break;
+    case 'discard':
+      if(d)d.imgs.forEach(function(im){URL.revokeObjectURL(im.url)});
+      S.draft=null;S.step=0;S.draftAi='';go('today');toast('Draft discarded.');break;
+  }
+});
+view.addEventListener('input',function(e){
+  var t=e.target;
+  if(t.id==='dayReview'){S.rv=t.value;return}
+  if(t.dataset.f&&S.draft){
+    S.draft[t.dataset.f]=t.value;
+    if(['entry','sl','tp','risk','acct','pipVal'].indexOf(t.dataset.f)>=0){var o=$('#riskOut');if(o)o.innerHTML=riskOut(S.draft)}
+  }
+});
+view.addEventListener('change',function(e){
+  var t=e.target;
+  if(t.dataset.chk&&S.draft){
+    S.draft.checks[t.dataset.chk]=t.checked;
+    var items=parseRules(S.cfg.rules[STEPS[S.step].k]),k=STEPS[S.step].k,done=0;
+    items.forEach(function(it,i){if(S.draft.checks[k+'-'+i])done++});
+    var c=$('#stepCount');if(c)c.textContent=done+' of '+items.length+' checked';
+  }else if(t.id==='imgInput'&&S.draft){
+    Array.prototype.slice.call(t.files).forEach(function(f){
+      if(/^image\//.test(f.type)&&S.draft.imgs.length<6)S.draft.imgs.push({blob:f,url:URL.createObjectURL(f)});
+    });
+    render();
+  }else if(t.dataset.shot){addShots(t.dataset.shot,t.files);t.value=''}
+  else if(t.dataset.f&&S.draft&&(t.dataset.f==='pair'||t.dataset.f==='date')){render()}
+  else if(t.dataset.pre!==undefined){var pi=t.dataset.pre,pc=t.checked;saveDay(todayStr(),function(c0){c0.pre=c0.pre||{};c0.pre[pi]=pc});render()}
+});
+$('#nav').addEventListener('click',function(e){var b=e.target.closest('[data-tab]');if(b)go(b.dataset.tab)});
+$('#lightbox').addEventListener('click',function(){this.hidden=true;this.innerHTML=''});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){var lb=$('#lightbox');lb.hidden=true;lb.innerHTML=''}});
+window.addEventListener('hashchange',function(){var h=location.hash.slice(1);if(TABS.indexOf(h)>=0&&h!==S.tab){S.tab=h;S.confirm=null;render()}});
+
+/* ---------- boot ---------- */
+var h0=location.hash.slice(1);if(TABS.indexOf(h0)>=0)S.tab=h0;
+render();
+var loadTimer=setTimeout(function(){if(!S.loaded){S.mode=S.mode==='boot'?'boot':S.mode;var el=$('#status');el.textContent='Cannot reach storage yet';el.className='status bad'}},10000);
+function onTrades(list){S.trades=list;S.loaded=true;clearTimeout(loadTimer);refresh()}
+function onCfg(c){
+  if(c){var m=clone(DEFAULT_CFG);Object.keys(c).forEach(function(k){if(k!=='rules')m[k]=c[k]});m.rules=Object.assign({},DEFAULT_CFG.rules,c.rules||{});S.cfg=m}
+  refresh();
+}
+function onDays(m){S.days=m||{};refresh()}
+function onErr(){S.mode='err';render()}
+store.init().then(function(){
+  S.mode=store.mode;
+  try{store.subscribe(onTrades,onCfg,onErr,onDays)}catch(e){S.mode='local';store.mode='local';store.subscribe(onTrades,onCfg,onErr,onDays)}
+  S.loaded=true;clearTimeout(loadTimer);render();
+}).catch(function(){S.mode='local';store.mode='local';store.subscribe(onTrades,onCfg,onErr,onDays);S.loaded=true;render()});
+})();
+</script>
+
+</body></html>
